@@ -1,0 +1,143 @@
+---
+title: "Stats 531 Homework 2"
+author: "Yirui Gao"
+date: "Jan 25"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    theme: flatly
+    toc: yes
+csl: ecology.csl
+---
+
+\newcommand\prob{\mathbb{P}}
+\newcommand\E{\mathbb{E}}
+\newcommand\var{\mathrm{Var}}
+\newcommand\cov{\mathrm{Cov}}
+
+
+**<big>Question 2.1</big>**. 
+
+Use the providede two methods to solve the casual AR(1) model with the error term to be a white noise process
+$$X_n = \phi X_{n-1} + \epsilon_n,$$
+where ${\epsilon_n }$ is white noise and $\var[\epsilon_n] = \sigma^2$.
+
+**A**. 
+Based on the distributive property for covariance equation that 
+$$ \cov(X, Y+Z) = \cov(X, Y) + \cov(X, Z).$$
+Thus we can expand the ACF with lag $h$ in this form:
+$$\begin{aligned}
+\gamma_h = \cov(X_n,X_{n+h}) &= \cov(X_n, \phi X_{n+h-1} + \epsilon_{n+h}), \mbox{ for $h>0$}\\
+                          &= \cov(X_n, \phi X_{n+h-1}) + \cov(X_n, \epsilon_{n+h}).
+\end{aligned}$$
+Since the error term based on the stationary process, we can see that $\cov(X_n, \epsilon_{n+h}) = 0$. Therefore by another property of covariance,
+$$\begin{aligned}
+\gamma_h &= \cov(X_n, \phi X_{n+h-1}) + \cov(X_n, \epsilon_{n+h}) \\
+        &= \cov(X_n, \phi X_{n+h-1}) \\
+        &= \phi\cov(X_n, X_{n+h-1}) \\
+        &= \phi\gamma_{h-1}.
+\end{aligned}$$
+
+So we can see the equation can be reduced to a simple the stochastic difference equation $\gamma_h = \phi\gamma_{h-1}.$
+Then suppose the solution is given by $\gamma_h = A\lambda^h$, we can have 
+$$\gamma_h = A\lambda^h = \phi\gamma_{h-1} = \phi A\lambda^{h-1}$$
+Substituting this general solution and we can get $\gamma_0 = A$. To solve the above equation, we can see that $\lambda = \phi$ holds. So now we need to find the value for $A$. Again, based on the covariance property, 
+$$\cov(aX + Y, aX+Y) = a^2\cov(X,X) + \cov(Y, Y) + 2a\cov(X, Y),$$
+we can do this by relate $\gamma_0$ with the covariance form:
+$$\begin{aligned}
+\gamma_0 = A &= \cov(X_n, X_n) \\
+            &= \phi^2\cov(X_{n-1}, X_{n-1}) + \cov(\epsilon_n, \epsilon_n) \\
+            &= \phi^2\gamma_0 + \sigma^2.
+\end{aligned}$$
+So $\gamma_0 = \frac{\sigma^2}{1 - \phi^2} = A$. Therefore, we can solve for $A = \frac{\sigma^2}{1 - \phi^2}$ and 
+$$ \gamma_h = A\lambda^h = \frac{\sigma^2}{1 - \phi^2}\phi^h = \frac{\sigma^2\phi^h}{1 - \phi^2}.$$
+
+
+**B**.
+
+Based on what we derived in class, using the stationary condition, we can write $X_n$ into a summation of error terms:
+$$ X_n = \sum_{k = 0}^{\infty}\phi^k\epsilon_{n-k},$$
+since when k approaches to infinity and given that the absolute value of $\phi$ is smaller than 1, the $\phi^kX_{n-k}$ will vanish.
+
+Try to expand this Taylor series, we can get
+$$ g(x)=(1-\phi x)^{-1} \approx g(0) + \frac{g'(0)}{1!}x + \frac{g''(0)}{2!}x^2 + ... .$$
+
+Since it is a special case of geometric series, where we know, by definition, that $\frac{1}{1-x} \approx 1 + x + x^2 + x^3 +...$ if $|x| < 1$. So here we can regard $\phi x$ as a whole since $\phi$ is a constant. 
+$$ \frac{1}{1-\phi x} \approx 1 + \phi x + (\phi x)^2 + (\phi x)^3 + ... = \sum_{n=0}^\infty (\phi x)^n.$$
+Since we have seen in the slides the following equation holds when $h$ is larger or equal to 0, 
+$$\gamma_h = \cov(X_n, X_{n+h}) = \sum_{j=0}^\infty \phi_j \phi_{j + h} \sigma^2 = \sum_{j=0}^\infty \phi^{2k+h} \sigma^2.$$
+So combined the above formulas, we can derive that
+$$\begin{aligned}
+\gamma_h &= \sum_{j=0}^\infty \phi^{2j+h} \sigma^2 \\
+          &= \sigma^2\phi^h\sum_{j=0}^\infty \phi^{2j} \\
+          &= \sigma^2\phi^h g(\phi) \\
+          &= \frac{\sigma^2\phi^h}{1 - \phi^2}.
+\end{aligned}$$
+
+
+**C**.
+Since the \textbf{ARMAacf} is a function to calculate the autocorrelation function in R, based on the above two problems, we can derive the autocorrelation function to be $\rho_h = \frac{\gamma_h}{\gamma_0} = \phi^h$. So we can compare the values, the one using this formula, and the other purely based on the R result:
+```{r}
+set.seed(12345678)
+# ARMAacf result:
+r1 <- ARMAacf(ar = c(0.6), lag.max = 50)
+# Formula result:
+phi <- 0.6
+h <- c(0:50)
+r2 <- phi^h
+print(r1)
+print(r2)
+```
+We can say, after comparing the results, that the two results give the same answer to this question.
+
+
+
+
+**<big>Question 2.2</big>**. 
+
+We have learned that the random walk model has an exact solution that $X_n = \sum_{k = 1}^n \epsilon_k$ for $X_n = X_{n-1} + \epsilon_n$ with $X_0 = 0$.
+
+Therefore, since $\{\epsilon_n\}$ is white noise with variance $\sigma^2$, we can expand the acf function $\gamma_{m,n}$ by:
+$$\begin{aligned}
+\gamma_{m,n} &= \cov(X_m, X_n) \\
+            &= \cov(\sum_{k = 1}^m \epsilon_k, \sum_{j = 1}^n \epsilon_j) \\
+            &= \sum_{k = 1}^m\sum_{j = 1}^n\cov(\epsilon_k, \epsilon_j) \\.
+\end{aligned}$$
+The white noise condition regulates the number of $\sigma^2$ to be summatized, since only $m=n$ will give $\cov(\epsilon_m, \epsilon_n) = \sigma^2 \neq 0$, so
+$$\begin{aligned}
+\gamma_{m,n} &= \sum_{k = 1}^m\sum_{j = 1}^n\cov(\epsilon_k, \epsilon_j) \\
+            &= min(m,n)\sigma^2.
+\end{aligned}$$
+
+
+
+
+
+
+**<big>Question 2.3</big>**. 
+
+***Question 2.1 Part A***
+
+I review the basic covariance property from the instruction of last homework and the url \url{https://web.calpoly.edu/~dsun09/lessons/properties_of_covariance.pdf}.
+
+
+***Question 2.1 Part B***
+
+I check the Taylor series expansion from \url{https://en.wikipedia.org/wiki/Taylor_series},
+
+and check the geometric series expansion at
+
+\url{https://ocw.mit.edu/courses/mathematics/18-01sc-single-variable-calculus-fall-2010/unit-5-exploring-the-infinite/part-b-taylor-series/session-99-taylors-series-continued/MIT18_01SCF10_Ses99b.pdf}.
+
+
+***Question 2.1 Part C***
+
+I learn the usage of \textbf{ARMAacf} in R from \url{http://www.craigmile.com/peter/teaching/6550/notes/acf_pacf_in_R.pdf}.
+
+
+
+***Question 2.2.***
+
+For this part, I did all the job myself without any onlint reference except the lecture slides.
+
