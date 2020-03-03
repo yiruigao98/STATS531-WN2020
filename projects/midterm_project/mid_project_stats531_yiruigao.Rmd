@@ -1,0 +1,20 @@
+---
+title: "Adelie Penguin Population Arrival from 1991 to 2018"
+author: "Yirui Gao"
+date: "Mar 3, 2020"
+output:
+  html_document:
+    theme: flatly
+    toc: yes
+  pdf_document:
+    toc: yes
+csl: ecology.csl
+---
+
+\newcommand\prob{\mathbb{P}}
+\newcommand\E{\mathbb{E}}
+\newcommand\var{\mathrm{Var}}
+\newcommand\cov{\mathrm{Cov}}
+
+
+# 1 Introduction
